@@ -1,0 +1,25 @@
+{
+  "name": "nodehw",
+  "version": "0.0.1",
+  "description": "Home work course",
+  "main": "app.js",
+  "scripts": {
+    "server": "node app.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/svidunovichromanv/nodeHW.git"
+  },
+  "author": "svidunovichromanv",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/svidunovichromanv/nodeHW/issues"
+  },
+  "homepage": "https://github.com/svidunovichromanv/nodeHW#readme",
+  "dependencies": {
+    "aws-sdk": "^2.778.0",
+    "body-parser": "^1.19.0",
+    "ejs": "^3.1.5",
+    "express": "^4.17.1"
+  }
+}
