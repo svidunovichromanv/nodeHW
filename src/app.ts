@@ -1,9 +1,14 @@
+import * as fs from "fs";
+
 require('dotenv').config();
 
 import {Worker} from "cluster";
 import * as expressTS from 'express';
+import path from "path";
 
 const cluster = require('cluster');
+const votesContent = path.join(process.cwd(), 'votes-content.json');
+const votes = path.join(process.cwd(), 'votes.json');
 
 
 if (cluster.isMaster) {
@@ -28,43 +33,33 @@ if (cluster.isMaster) {
 
     AWS.config.region = process.env.REGION
     const app = express();
-
-    app.set('view engine', 'ejs');
-    const rootPass = __dirname.slice(0,-5);
-    app.set('views', rootPass + '/views');
     app.use(bodyParser.urlencoded({extended:false}));
+    app.use(bodyParser.json());
 
-    app.get('/', (req: expressTS.Request, res: expressTS.Response) => {
-        res.render('index', {
-            static_path: 'static',
-            theme: process.env.THEME || 'flatly',
-            flask_debug: process.env.FLASK_DEBUG || 'false',
-            actionUrl: `http://${req.headers.host + req.url}signup`,
-            name: '',
-            email: '',
-            validationNameText: '',
-            validationEmailText: '',
-        });
+    app.get('/variants', (req: expressTS.Request, res: expressTS.Response) => {
+        const data = fs.readFileSync(votesContent,'utf-8');
+        res.send(JSON.parse(data));
     });
 
-    app.post('/signup', (req: expressTS.Request, res: expressTS.Response) => {
-        if (req.body.name.length <= 2 || req.body.email.length <= 5 || !req.body.email.includes('@')) {
-            const validationNameText = req.body.name.length <= 2 ? 'Should be longer then 2 symbols' : '';
-            const validationEmailText = req.body.email.length <= 5 || !req.body.email.includes('@') ? 'Should be longer than 5 symbols, and contain @' : '';
-            res.render('index', {
-                static_path: 'static',
-                theme: process.env.THEME || 'flatly',
-                flask_debug: process.env.FLASK_DEBUG || 'false',
-                actionUrl: `http://${req.headers.host + req.url}`,
-                validationNameText,
-                validationEmailText,
-                name: req.body.name,
-                email: req.body.email,
-            });
-        } else {
-            res.send(`signup ok, name=${req.body.name} email=${req.body.email}, previewAccess=${req.body.previewAccess}`);
+    app.get('/stat', (req: expressTS.Request, res: expressTS.Response) => {
+        const data = fs.readFileSync(votes,'utf-8');
+        res.setHeader('Cache-Control', 'no-cache');
+        res.send(JSON.parse(data));
+    });
+
+    app.post('/vote', (req: expressTS.Request, res: expressTS.Response) => {
+        try {
+            const votesValue = JSON.parse(fs.readFileSync(votes,'utf-8'));
+            ++votesValue[req.body.value];
+            fs.writeFileSync(votes, JSON.stringify(votesValue));
+            res.send(200);
+        }
+        catch (e) {
+            res.send(500);
         }
     });
+
+
 
     const port = process.env.PORT || 7680;
     //if (process.env.NODE_ENV === 'development') {
