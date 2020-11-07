@@ -33,21 +33,22 @@ if (cluster.isMaster) {
 
     AWS.config.region = process.env.REGION
     const app = express();
+    app.use(express.static(path.join(process.cwd(), 'static', 'public')));
     app.use(bodyParser.urlencoded({extended:false}));
     app.use(bodyParser.json());
 
-    app.get('/variants', (req: expressTS.Request, res: expressTS.Response) => {
+    app.get('/api/variants', (req: expressTS.Request, res: expressTS.Response) => {
         const data = fs.readFileSync(votesContent,'utf-8');
         res.send(JSON.parse(data));
     });
 
-    app.get('/stat', (req: expressTS.Request, res: expressTS.Response) => {
+    app.get('/api/stat', (req: expressTS.Request, res: expressTS.Response) => {
         const data = fs.readFileSync(votes,'utf-8');
         res.setHeader('Cache-Control', 'no-cache');
         res.send(JSON.parse(data));
     });
 
-    app.post('/vote', (req: expressTS.Request, res: expressTS.Response) => {
+    app.post('/api/vote', (req: expressTS.Request, res: expressTS.Response) => {
         try {
             const votesValue = JSON.parse(fs.readFileSync(votes,'utf-8'));
             ++votesValue[req.body.value];
