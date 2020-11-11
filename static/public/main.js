@@ -20,13 +20,13 @@ class VotesService {
         this.http = http;
     }
     variants() {
-        return this.http.get('/api/variants');
+        return this.http.get('/variants');
     }
     stat() {
-        return this.http.get('/api/stat');
+        return this.http.get('/stat');
     }
     vote(value) {
-        return this.http.post('/api/vote', { value }, { responseType: 'text' });
+        return this.http.post('/vote', { value }, { responseType: 'text' });
     }
 }
 VotesService.ɵfac = function VotesService_Factory(t) { return new (t || VotesService)(_angular_core__WEBPACK_IMPORTED_MODULE_0__["ɵɵinject"](_angular_common_http__WEBPACK_IMPORTED_MODULE_1__["HttpClient"])); };

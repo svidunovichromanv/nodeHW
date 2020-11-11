@@ -33,7 +33,9 @@ if (cluster.isMaster) {
 
     AWS.config.region = process.env.REGION
     const app = express();
-    app.use(express.static(path.join(process.cwd(), 'static', 'public')));
+    if (process.env.NODE_ENV !== 'development') {
+        app.use(express.static(path.join(process.cwd(), 'static', 'public')));
+    }
     app.use(bodyParser.urlencoded({extended:false}));
     app.use(bodyParser.json());
 
