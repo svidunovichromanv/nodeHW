@@ -2,19 +2,19 @@
   "question" : "Pick your favorite season",
   "answers" : [
     {
-      "value": 0,
+      "value": "winter",
       "label": "Winter"
     },
     {
-      "value": 1,
+      "value": "spring",
       "label": "Spring"
     },
     {
-      "value": 2,
+      "value": "summer",
       "label": "Summer"
     },
     {
-      "value": 3,
+      "value": "autumn",
       "label": "Autumn"
     }
   ]
