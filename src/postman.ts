@@ -72,22 +72,25 @@ async function sendData(postmanRequest: PostmanRequest) {
     // Default options are marked with *
     try {
         const postmanHeaders: any = {};
-        postmanRequest.headers.forEach(header=>postmanHeaders[header.key] = header.value)
+        postmanRequest.headers.forEach(header=>postmanHeaders[header.key] = header.value);
+        if(postmanRequest.contentType)postmanHeaders['Content-Type'] = postmanRequest.contentType;
         const postmanBody: any = {};
         if(postmanRequest.body) postmanBody.body = postmanRequest.body;
         const response = await fetch(postmanRequest.url+postmanRequest.params, {
             method: postmanRequest.method,
-            headers: {
-                'Content-Type': postmanRequest.contentType || 'form-data',
-                ...postmanHeaders
-            },
+            headers: {...postmanHeaders},
             ...postmanBody
         });
         const resultHeaders: any = {};
         for (let [key, value] of response.headers) {
             resultHeaders[key] = value;
         }
-        const resultBody = await response.json();
+        let resultBody;
+        if(response.headers.get('content-type') === 'application/json; charset=utf-8'){
+            resultBody = await response.json();
+        } else {
+            resultBody = await response.text();
+        }
         return {body: resultBody, headers: resultHeaders};
     } catch (e) {
         return e;
