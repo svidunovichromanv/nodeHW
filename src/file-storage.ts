@@ -58,13 +58,14 @@ app.post('/api/upload', async (req: expressTS.Request, res: expressTS.Response) 
         const fileStoreList: FileStored[] = JSON.parse(await fsp.readFile(fileStoreListPath, 'utf-8'));
         let newName: string = '';
         let userId: string = req.headers.authorization;
+        console.log('on data upload', userId);
         const size = +req.header('content-length');
         let dowloaded = 0;
         req.on('data', chunk => {
             dowloaded += chunk.length;
             let progress = (dowloaded / size) * 100;
             const connection = clients.find(client => client.userId === userId)?.connection;
-            console.log('on data connection', progress);
+            //console.log('on data connection', progress, !!connection);
             connection?.send(Math.round(progress) + ' %');
         });
 
@@ -75,11 +76,9 @@ app.post('/api/upload', async (req: expressTS.Request, res: expressTS.Response) 
                 await fsp.writeFile(fileStoreListPath, JSON.stringify(fileStoreList));
                 const client = clients.find(client => client.userId === userId);
 
-                console.log('on end client', client?.userId);
+                console.log('--->on end client', client?.userId);
                 if (client) {
                     client.connection.send('destroy');
-                    client.connection.terminate();
-                    client.connection = null;
                 }
                 clients = clients.filter(client => client.connection);
             } catch (e) {
@@ -121,16 +120,27 @@ app.post('/api/upload', async (req: expressTS.Request, res: expressTS.Response) 
     }
 });
 
+socketServer.on('connectFailed', function(error) {
+    console.log('Connect Error: ' + error.toString());
+});
+
 socketServer.on('connection', (connection: any) => {
-
-    connection.send('init');
-
+    connection.on('error', function(error: any) {
+        console.log("Connection Error: " + error.toString());
+    });
+    connection.on('close', function() {
+        console.log('echo-protocol Connection Closed');
+    });
     connection.on('message', (message: string) => {
+        console.log('-ws userId = ', message)
         if (message) {
             console.log('ws userId = ', message)
             clients.push({connection: connection, userId: message});
         }
     });
+    console.log('---------------->>>ws sta');
+    connection.send('init');
+    console.log('---------------->>>ws init = ');
 });
 
 app.use('/static', express.static('static'));

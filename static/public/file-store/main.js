@@ -893,11 +893,6 @@ class FileStorageComponent {
     }
     ngOnInit() {
         this.files$ = this.fileStorageService.getFiles();
-    }
-    handleFileInput(files) {
-        this.fileToUpload = files.item(0);
-    }
-    uploadFileToActivity() {
         this.userId = Object(uuid__WEBPACK_IMPORTED_MODULE_1__["v4"])();
         this.fileStorageService.startWS();
         this.uploadProgress$ = this.fileStorageService.messages.asObservable()
@@ -905,19 +900,21 @@ class FileStorageComponent {
             if (message === 'init') {
                 this.fileStorageService.messages.next(this.userId);
             }
-        }), Object(rxjs_operators__WEBPACK_IMPORTED_MODULE_3__["tap"])(message => {
+        }), Object(rxjs_operators__WEBPACK_IMPORTED_MODULE_3__["map"])(message => {
             if (message === 'destroy') {
-                this.fileStorageService.messages.complete();
-                this.uploadProgress$ = null;
+                return null;
             }
-        }), Object(rxjs_operators__WEBPACK_IMPORTED_MODULE_3__["filter"])((message) => message.includes('%')), Object(rxjs_operators__WEBPACK_IMPORTED_MODULE_3__["catchError"])(() => {
-            this.uploadProgress$ = null;
+            return message;
+        }), Object(rxjs_operators__WEBPACK_IMPORTED_MODULE_3__["filter"])((message) => message !== 'init'), Object(rxjs_operators__WEBPACK_IMPORTED_MODULE_3__["catchError"])((e) => {
             return Object(rxjs__WEBPACK_IMPORTED_MODULE_2__["of"])('error');
         }));
+    }
+    handleFileInput(files) {
+        this.fileToUpload = files.item(0);
+    }
+    uploadFileToActivity() {
         this.fileStorageService.postFile(this.fileToUpload, this.userId, this.description).subscribe(data => {
-            this.uploadProgress$ = null;
         }, error => {
-            this.uploadProgress$ = null;
         });
     }
     download(storageName, userName) {
